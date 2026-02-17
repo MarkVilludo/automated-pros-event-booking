@@ -30,14 +30,7 @@ class UserSeeder extends Seeder
             'email' => 'markanthony.villudo@gmail.com',
         ]);
 
-        // customer accounts
-        User::factory()->customer()->create([
-            'name' => 'Jerom Teodoro',
-            'email' => 'jerom.teodoro@gmail.com',
-        ]);
-        User::factory()->customer()->create([
-            'name' => 'John Doe',
-            'email' => 'john.doe@gmail.com',
-        ]);
+        //for customer account, they need to manually create
+        // their accounts using api/register endpoint.
     }
 }
