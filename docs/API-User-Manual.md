@@ -17,7 +17,7 @@ Authorization: Bearer <your_token>
 
 ```json
 {
-    "email": "admin@example.com",
+    "email": "admin1@example.com",
     "password": "password"
 }
 ```
@@ -58,6 +58,11 @@ These work for **Admin**, **Organizer**, and **Customer** once logged in.
 
 ## 3. Admin
 
+Admin accounts:
+
+-   `admin1@example.com`
+-   `admin2@example.com`
+
 Admins can do everything: manage all events, all tickets, and all bookings.
 
 | Action              | Method | Endpoint                         |
@@ -84,6 +89,12 @@ Admins can do everything: manage all events, all tickets, and all bookings.
 ---
 
 ## 4. Organizer
+
+Organizer accounts:
+
+-   `organizer1@example.com`
+-   `organizer2@example.com`
+-   `organizer3@example.com`
 
 Organizers can manage **only their own** events and those events’ tickets. They can view bookings for their events.
 
@@ -116,15 +127,28 @@ Organizers can manage **only their own** events and those events’ tickets. The
 
 Customers can browse events, book tickets, see their bookings, cancel, and run mock payments.
 
-| Action                      | Method | Endpoint                            |
-| --------------------------- | ------ | ----------------------------------- |
-| List events                 | GET    | `/api/events`                       |
-| Get event (with tickets)    | GET    | `/api/events/{id}`                  |
-| Book a ticket               | POST   | `/api/tickets/{ticket_id}/bookings` |
-| List my bookings            | GET    | `/api/bookings`                     |
-| Cancel my booking           | PUT    | `/api/bookings/{id}/cancel`         |
-| Mock payment for my booking | POST   | `/api/bookings/{id}/payment`        |
-| Get my payment              | GET    | `/api/payments/{id}`                |
+Customer accounts:
+
+-   `customer1@example.com`
+-   `customer2@example.com`
+-   `customer3@example.com`
+-   `customer4@example.com`
+-   `customer5@example.com`
+-   `customer6@example.com`
+-   `customer7@example.com`
+-   `customer8@example.com`
+-   `customer9@example.com`
+-   `customer10@example.com`
+
+    | Action                      | Method | Endpoint                            |
+    | --------------------------- | ------ | ----------------------------------- |
+    | List events                 | GET    | `/api/events`                       |
+    | Get event (with tickets)    | GET    | `/api/events/{id}`                  |
+    | Book a ticket               | POST   | `/api/tickets/{ticket_id}/bookings` |
+    | List my bookings            | GET    | `/api/bookings`                     |
+    | Cancel my booking           | PUT    | `/api/bookings/{id}/cancel`         |
+    | Mock payment for my booking | POST   | `/api/bookings/{id}/payment`        |
+    | Get my payment              | GET    | `/api/payments/{id}`                |
 
 **Typical flow**
 
@@ -164,10 +188,12 @@ Customers can browse events, book tickets, see their bookings, cancel, and run m
 
 ## 8. Seeded test accounts (after `php artisan db:seed`)
 
-| Role      | Email               | Password      |
-| --------- | ------------------- | ------------- |
-| Admin     | admin@example.com   | password      |
-| Organizer | (from seed)         | password      |
-| Customer  | (register manually) | (your choice) |
+Seeded data: **2 admins**, **3 organizers**, **10 customers**, **5 events**, **15 tickets**, **20 bookings**. All seeded users have password: **`password`**.
 
-Use **POST** `/api/login` with the email and password, then use the returned `token` in `Authorization: Bearer <token>` for all subsequent requests.
+| Role          | Emails                                                                       |
+| ------------- | ---------------------------------------------------------------------------- |
+| **Admin**     | `admin1@example.com`, `admin2@example.com`                                   |
+| **Organizer** | `organizer1@example.com`, `organizer2@example.com`, `organizer3@example.com` |
+| **Customer**  | `customer1@example.com` … `customer10@example.com`                           |
+
+Use **POST** `/api/login` with one of the emails and password `password`, then use the returned `token` in `Authorization: Bearer <token>` for all subsequent requests.

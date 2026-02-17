@@ -8,29 +8,35 @@ use Illuminate\Database\Seeder;
 
 class EventSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $organizers = User::where('role', 'organizer')->get();
-
-        if ($organizers->isEmpty()) {
+        $organizerIds = User::where('role', 'organizer')->pluck('id')->all();
+        if (count($organizerIds) < 1) {
             Event::factory()->count(5)->create();
             return;
         }
 
-        foreach ($organizers as $organizer) {
-            Event::factory()
-                ->count(rand(1, 3))
-                ->create(['created_by' => $organizer->id]);
+        $events = [
+            ['title' => 'Summer Concert 2025', 'description' => 'Annual summer concert.', 'date' => now()->addDays(30), 'location' => 'Central Park'],
+            ['title' => 'Tech Conference', 'description' => 'Developer conference.', 'date' => now()->addDays(45), 'location' => 'Convention Center'],
+            ['title' => 'Food Festival', 'description' => 'Local food and drinks.', 'date' => now()->addDays(60), 'location' => 'Downtown Square'],
+            ['title' => 'Comedy Night', 'description' => 'Stand-up comedy show.', 'date' => now()->addDays(14), 'location' => 'City Theater'],
+            ['title' => 'Charity Run', 'description' => '5K charity run.', 'date' => now()->addDays(90), 'location' => 'Riverside Trail'],
+        ];
+
+        foreach ($events as $index => $attrs) {
+            Event::firstOrCreate(
+                ['title' => $attrs['title']],
+                array_merge($attrs, [
+                    'created_by' => $organizerIds[$index % count($organizerIds)],
+                ])
+            );
         }
 
-        // Ensure at least 5 events exist
         if (Event::count() < 5) {
             Event::factory()
                 ->count(5 - Event::count())
-                ->create(['created_by' => $organizers->random()->id]);
+                ->create(['created_by' => $organizerIds[0]]);
         }
     }
 }

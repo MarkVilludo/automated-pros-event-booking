@@ -10,32 +10,41 @@ use Illuminate\Database\Seeder;
 
 class BookingSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $customers = User::where('role', 'customer')->get();
-        $tickets = Ticket::all();
-
-        if ($customers->isEmpty() || $tickets->isEmpty()) {
+        $customers = User::where('role', 'customer')->pluck('id')->all();
+        $tickets = Ticket::with('event')->get();
+        if (empty($customers) || $tickets->isEmpty()) {
             return;
         }
 
-        $customersToBook = $customers->shuffle()->take(min(8, $customers->count()));
+        $target = 20;
+        $created = 0;
+        $attempts = 0;
+        $maxAttempts = $target * 20;
 
-        foreach ($customersToBook as $customer) {
+        while ($created < $target && $attempts < $maxAttempts) {
+            $attempts++;
+            $customerId = $customers[array_rand($customers)];
             $ticket = $tickets->random();
-            $quantity = min(rand(1, 4), $ticket->quantity);
-            Booking::factory()->create([
-                'user_id' => $customer->id,
+            $quantity = min(rand(1, 3), (int) $ticket->quantity);
+            if ($quantity < 1) {
+                continue;
+            }
+            $exists = Booking::where('user_id', $customerId)
+                ->where('ticket_id', $ticket->id)
+                ->whereIn('status', [BookingStatus::Pending, BookingStatus::Confirmed])
+                ->exists();
+            if ($exists) {
+                continue;
+            }
+            Booking::create([
+                'user_id' => $customerId,
                 'ticket_id' => $ticket->id,
                 'quantity' => $quantity,
                 'status' => fake()->randomElement(BookingStatus::cases()),
             ]);
+            $created++;
         }
-
-        // Create a few more random bookings
-        Booking::factory()->count(5)->create();
     }
 }

@@ -1,59 +1,155 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Event Booking API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+REST API for event management and ticket booking. Roles: **Admin**, **Organizer**, **Customer**. Authentication via Laravel Sanctum.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Requirements
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+-   PHP 8.2+
+-   Composer
+-   SQLite (default) or MySQL/PostgreSQL
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Setup
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### 1. Install dependencies
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+```bash
+composer install
+```
 
-## Laravel Sponsors
+### 2. Environment
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-### Premium Partners
+Edit `.env` if needed (see [Configuration](#configuration) below).
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### 3. Database
 
-## Contributing
+Default is SQLite with a file at `database/database.sqlite`. Ensure the file exists:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+touch database/database.sqlite
+```
 
-## Code of Conduct
+Or set `DB_CONNECTION=mysql` (or `pgsql`) and configure `DB_*` in `.env`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Run migrations:
 
-## Security Vulnerabilities
+```bash
+php artisan migrate
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### 4. Seed data
+
+Seeds **2 admins**, **3 organizers**, **10 customers**, **5 events**, **15 tickets**, and **20 bookings** (with payments):
+
+```bash
+php artisan db:seed
+```
+
+Or reset and seed in one go:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+### 5. Run the server
+
+```bash
+php artisan serve
+```
+
+API base URL: **http://127.0.0.1:8000/api**
+
+---
+
+## Seeded data
+
+After `php artisan db:seed`, you get:
+
+| Type       | Count |
+| ---------- | ----- |
+| Admins     | 2     |
+| Organizers | 3     |
+| Customers  | 10    |
+| Events     | 5     |
+| Tickets    | 15    |
+| Bookings   | 20    |
+| Payments   | 20    |
+
+All seeded users use password: **`password`**.
+
+### Seeded accounts (login with these)
+
+| Role          | Emails                                                                       |
+| ------------- | ---------------------------------------------------------------------------- |
+| **Admin**     | `admin1@example.com`, `admin2@example.com`                                   |
+| **Organizer** | `organizer1@example.com`, `organizer2@example.com`, `organizer3@example.com` |
+| **Customer**  | `customer1@example.com` … `customer10@example.com`                           |
+
+Example login:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin1@example.com","password":"password"}'
+```
+
+Use the returned `token` in `Authorization: Bearer <token>` for protected endpoints.
+
+---
+
+## Configuration
+
+### Mail (e.g. MailHog)
+
+To capture confirmation emails locally (MailHog on port 1025, web UI on 8025), in `.env`:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS="hello@example.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+If the app runs inside Docker with a MailHog service, use `MAIL_HOST=mailhog`.
+
+### Queue (confirmation emails)
+
+Confirmation emails are queued. Either:
+
+-   Run a worker: `php artisan queue:work` (with `QUEUE_CONNECTION=database` or `redis`)
+
+---
+
+## Tests
+
+```bash
+php artisan test
+```
+
+-   **Feature:** Registration, Login, Event creation, Ticket booking, Payment.
+-   **Unit:** `PaymentService` (mock payment success/failure, booking confirmation).
+
+---
+
+## Documentation
+
+-   **[API User Manual](docs/API-User-Manual.md)** – Endpoints, roles, request/response format, flows.
+-   **[Implementation Overview](docs/Implementation-Overview.md)** – Architecture, layers, flows, testing, Mail/queue/observer config.
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT.

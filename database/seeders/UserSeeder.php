@@ -8,29 +8,51 @@ use Illuminate\Database\Seeder;
 
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    private function defaults(): array
+    {
+        return array_merge(
+            User::factory()->definition(),
+            ['password' => bcrypt('password')]
+        );
+    }
+
     public function run(): void
     {
-        //for checking manually created accounts and test each role
-        // admin account
-        User::factory()->admin()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@example.com',
-        ]);
+        $defaults = $this->defaults();
 
-        // organizer accounts
-        User::factory()->organizer()->create([
-            'name' => 'Joyce Villudo',
-            'email' => 'villudo.joyce@gmail.com',
-        ]);
-        User::factory()->organizer()->create([
-            'name' => 'Mark Anthony Villudo',
-            'email' => 'markanthony.villudo@gmail.com',
-        ]);
+        $admins = [
+            ['name' => 'Admin One', 'email' => 'admin1@example.com'],
+            ['name' => 'Admin Two', 'email' => 'admin2@example.com'],
+        ];
+        foreach ($admins as $attrs) {
+            User::firstOrCreate(
+                ['email' => $attrs['email']],
+                array_merge($defaults, $attrs, ['role' => UserRole::Admin->value])
+            );
+        }
 
-        //for customer account, they need to manually create
-        // their accounts using api/register endpoint.
+        $organizers = [
+            ['name' => 'Organizer One', 'email' => 'organizer1@example.com'],
+            ['name' => 'Organizer Two', 'email' => 'organizer2@example.com'],
+            ['name' => 'Organizer Three', 'email' => 'organizer3@example.com'],
+        ];
+        foreach ($organizers as $attrs) {
+            User::firstOrCreate(
+                ['email' => $attrs['email']],
+                array_merge($defaults, $attrs, ['role' => UserRole::Organizer->value])
+            );
+        }
+
+        for ($i = 1; $i <= 10; $i++) {
+            $email = "customer{$i}@example.com";
+            User::firstOrCreate(
+                ['email' => $email],
+                array_merge($defaults, [
+                    'name' => "Customer {$i}",
+                    'email' => $email,
+                    'role' => UserRole::Customer->value,
+                ])
+            );
+        }
     }
 }

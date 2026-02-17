@@ -8,27 +8,37 @@ use Illuminate\Database\Seeder;
 
 class TicketSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
+    private const TYPES = [
+        'VIP' => [150, 500],
+        'Premium' => [80, 200],
+        'Standard' => [30, 80],
+        'General Admission' => [15, 40],
+        'Early Bird' => [10, 30],
+    ];
+
     public function run(): void
     {
-        $events = Event::all();
+        $events = Event::orderBy('id')->get();
+        if ($events->isEmpty()) {
+            return;
+        }
+
+        $typeNames = array_keys(self::TYPES);
+        $created = 0;
+        $target = 15;
 
         foreach ($events as $event) {
-            $types = ['VIP', 'Standard', 'Premium', 'General Admission'];
-            foreach (array_slice($types, 0, rand(2, 4)) as $type) {
-                Ticket::factory()->create([
-                    'event_id' => $event->id,
-                    'type' => $type,
-                    'price' => match ($type) {
-                        'VIP' => rand(150, 500),
-                        'Premium' => rand(80, 200),
-                        'Standard' => rand(30, 80),
-                        default => rand(15, 40),
-                    },
-                    'quantity' => rand(50, 500),
-                ]);
+            for ($i = 0; $i < 3 && $created < $target; $i++) {
+                $type = $typeNames[($created + $event->id) % count($typeNames)];
+                [$min, $max] = self::TYPES[$type];
+                Ticket::firstOrCreate(
+                    ['event_id' => $event->id, 'type' => $type],
+                    [
+                        'price' => rand($min, $max),
+                        'quantity' => rand(50, 500),
+                    ]
+                );
+                $created++;
             }
         }
     }
