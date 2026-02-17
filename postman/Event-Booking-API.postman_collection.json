@@ -1,0 +1,282 @@
+{
+  "info": {
+    "name": "Event Booking API",
+    "description": "Auth (Sanctum), Events, Tickets, Bookings with role-based access.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api/v1" },
+    { "key": "token", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Jane Customer\",\n  \"email\": \"jane@example.com\",\n  \"password\": \"password123\",\n  \"password_confirmation\": \"password123\",\n  \"phone\": \"+1234567890\"\n}"
+            },
+            "url": "{{base_url}}/register",
+            "description": "Register as customer. Returns user + token."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  var j = pm.response.json();",
+                  "  if (j.data && j.data.token) {",
+                  "    pm.collectionVariables.set('token', j.data.token);",
+                  "  }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password\"\n}"
+            },
+            "url": "{{base_url}}/login",
+            "description": "Login. Saves token to collection variable if script runs."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/logout",
+            "description": "Revoke current token. Requires auth."
+          }
+        },
+        {
+          "name": "Get current user",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/user",
+            "description": "Get authenticated user. Requires auth."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "List events",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/events?per_page=15",
+            "description": "Admin: all. Organizer: own. Customer: all."
+          }
+        },
+        {
+          "name": "Create event",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Summer Music Festival 2026\",\n  \"description\": \"Annual outdoor music festival with multiple stages.\",\n  \"date\": \"2026-07-15T18:00:00\",\n  \"location\": \"Central Park, New York\"\n}"
+            },
+            "url": "{{base_url}}/events",
+            "description": "Admin or Organizer only."
+          }
+        },
+        {
+          "name": "Show event",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/events/1",
+            "description": "Replace 1 with event id."
+          }
+        },
+        {
+          "name": "Update event",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Summer Music Festival 2026 (Updated)\",\n  \"location\": \"Riverside Arena, New York\"\n}"
+            },
+            "url": "{{base_url}}/events/1",
+            "description": "Admin or event owner (Organizer). Replace 1 with event id."
+          }
+        },
+        {
+          "name": "Delete event",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/events/1",
+            "description": "Admin or event owner. Replace 1 with event id."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tickets",
+      "item": [
+        {
+          "name": "List tickets",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/tickets?per_page=15",
+            "description": "Admin: all. Organizer: own events. Customer: all."
+          }
+        },
+        {
+          "name": "Create ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_id\": 1,\n  \"type\": \"VIP\",\n  \"price\": 199.99,\n  \"quantity\": 100\n}"
+            },
+            "url": "{{base_url}}/tickets",
+            "description": "Admin or Organizer (for their event). Set event_id to existing event."
+          }
+        },
+        {
+          "name": "Show ticket",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/tickets/1",
+            "description": "Replace 1 with ticket id."
+          }
+        },
+        {
+          "name": "Update ticket",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 179.99,\n  \"quantity\": 120\n}"
+            },
+            "url": "{{base_url}}/tickets/1",
+            "description": "Admin or Organizer (event owner). Replace 1 with ticket id."
+          }
+        },
+        {
+          "name": "Delete ticket",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/tickets/1",
+            "description": "Replace 1 with ticket id."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "List bookings",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/bookings?per_page=15",
+            "description": "Admin: all. Organizer: their events. Customer: own only."
+          }
+        },
+        {
+          "name": "Create booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticket_id\": 1,\n  \"quantity\": 2\n}"
+            },
+            "url": "{{base_url}}/bookings",
+            "description": "Book tickets. Set ticket_id to existing ticket. quantity must not exceed ticket quantity."
+          }
+        },
+        {
+          "name": "Show booking",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/bookings/1",
+            "description": "Replace 1 with booking id."
+          }
+        },
+        {
+          "name": "Update booking (e.g. cancel)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"cancelled\"\n}"
+            },
+            "url": "{{base_url}}/bookings/1",
+            "description": "Update quantity or status (pending, confirmed, cancelled). Replace 1 with booking id."
+          }
+        },
+        {
+          "name": "Delete booking",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/bookings/1",
+            "description": "Delete/cancel booking. Replace 1 with booking id."
+          }
+        }
+      ]
+    }
+  ]
+}
