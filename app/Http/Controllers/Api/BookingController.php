@@ -78,7 +78,7 @@ class BookingController extends Controller
 
     public function cancel(Request $request, Booking $booking): JsonResponse
     {
-        $this->authorize('update', $booking);
+        $this->authorize('cancel', $booking);
         if ($booking->status === BookingStatus::Cancelled) {
             return ApiResponse::error('Booking is already cancelled.', 422);
         }

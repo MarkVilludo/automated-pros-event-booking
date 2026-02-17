@@ -47,4 +47,15 @@ class BookingPolicy
     {
         return $this->update($user, $booking);
     }
+
+    public function cancel(User $user, Booking $booking): bool
+    {
+        if ($user->role === UserRole::Admin) {
+            return true;
+        }
+        if ($user->role === UserRole::Organizer) {
+            return false;
+        }
+        return (int) $booking->user_id === (int) $user->id;
+    }
 }

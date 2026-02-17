@@ -16,14 +16,33 @@ class EventService
     use InvalidatesCache;
 
     private const CACHE_TTL_SECONDS = 300;
+    private const FREQUENT_LIST_TTL_SECONDS = 600;
     private const CACHE_PREFIX = 'events';
     private const LIST_VERSION_KEY = 'events_list_version';
+    private const FREQUENT_LIST_KEY = 'events.list.frequent';
+
+    public function listFrequentlyAccessed(int $perPage = 15): LengthAwarePaginator
+    {
+        $cacheKey = self::FREQUENT_LIST_KEY . '.' . $perPage;
+
+        return Cache::remember($cacheKey, self::FREQUENT_LIST_TTL_SECONDS, function () use ($perPage) {
+            return Event::query()
+                ->with('creator:id,name,email', 'tickets')
+                ->latest()
+                ->paginate($perPage);
+        });
+    }
 
     public function list(int $userId, UserRole $role, int $perPage = 15, array $filters = []): LengthAwarePaginator
     {
         $version = Cache::get(self::LIST_VERSION_KEY, 0);
         $page = request()->get('page', 1);
         $cacheKey = self::CACHE_PREFIX . '.list.v' . $version . '.' . $role->value . '.' . $userId . '.' . $perPage . '.' . $page . '.' . md5(json_encode($filters));
+
+        $hasFilters = ! empty(array_filter($filters ?? []));
+        if (! $hasFilters && (int) request()->get('page', 1) === 1 && $role !== UserRole::Organizer) {
+            return $this->listFrequentlyAccessed($perPage);
+        }
 
         return Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($userId, $role, $perPage, $filters) {
             $query = Event::query()->with('creator:id,name,email', 'tickets');
@@ -80,5 +99,13 @@ class EventService
     private function bumpListVersion(): void
     {
         Cache::put(self::LIST_VERSION_KEY, Cache::get(self::LIST_VERSION_KEY, 0) + 1);
+        $this->forgetFrequentListCache();
+    }
+
+    private function forgetFrequentListCache(): void
+    {
+        foreach ([15, 20, 30, 50] as $perPage) {
+            $this->forgetKey(self::FREQUENT_LIST_KEY . '.' . $perPage);
+        }
     }
 }
