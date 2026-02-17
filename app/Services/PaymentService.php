@@ -2,11 +2,10 @@
 
 namespace App\Services;
 
+use App\Enums\BookingStatus;
 use App\Enums\PaymentStatus;
 use App\Models\Booking;
 use App\Models\Payment;
-use App\Notifications\BookingConfirmedNotification;
-use App\Enums\BookingStatus;
 
 class PaymentService
 {
@@ -22,8 +21,6 @@ class PaymentService
 
         if ($success) {
             $booking->update(['status' => BookingStatus::Confirmed]);
-            $booking->load('user', 'ticket.event');
-            $booking->user->notify(new BookingConfirmedNotification($booking));
         }
 
         return ['payment' => $payment, 'success' => $success];

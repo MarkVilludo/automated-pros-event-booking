@@ -8,7 +8,8 @@ use App\Models\Booking;
 use App\Models\Payment;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
-
+use App\Enums\BookingStatus;
+use App\Enums\PaymentStatus;
 class BookingService
 {
     private const CACHE_TTL_SECONDS = 300;
@@ -47,13 +48,13 @@ class BookingService
             'user_id' => $userId,
             'ticket_id' => $data['ticket_id'],
             'quantity' => $data['quantity'],
-            'status' => $data['status'] ?? \App\Enums\BookingStatus::Pending,
+            'status' => $data['status'] ?? BookingStatus::Pending,
         ]);
         $ticket = $booking->ticket;
         Payment::create([
             'booking_id' => $booking->id,
             'amount' => $ticket->price * $booking->quantity,
-            'status' => \App\Enums\PaymentStatus::Success,
+            'status' => PaymentStatus::Success,
         ]);
         $booking->load('user:id,name,email', 'ticket.event:id,title,date', 'payment');
         $this->bumpListVersion();
