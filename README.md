@@ -143,13 +143,6 @@ php artisan test
 
 ---
 
-## Documentation
-
--   **[API User Manual](docs/API-User-Manual.md)** – Endpoints, roles, request/response format, flows.
--   **[Implementation Overview](docs/Implementation-Overview.md)** – Architecture, layers, flows, testing, Mail/queue/observer config.
-
----
-
 ## License
 
 MIT.
