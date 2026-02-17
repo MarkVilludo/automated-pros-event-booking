@@ -32,12 +32,12 @@ class UserSeeder extends Seeder
 
         // customer accounts
         User::factory()->customer()->create([
-            'name' => 'Customer User',
-            'email' => 'customer+1@example.com',
+            'name' => 'Jerom Teodoro',
+            'email' => 'jerom.teodoro@gmail.com',
         ]);
         User::factory()->customer()->create([
-            'name' => 'Customer User',
-            'email' => 'customer+2@example.com',
+            'name' => 'John Doe',
+            'email' => 'john.doe@gmail.com',
         ]);
     }
 }
