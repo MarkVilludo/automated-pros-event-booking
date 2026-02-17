@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
+            'prevent.double.booking' => \App\Http\Middleware\PreventDoubleBooking::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -12,9 +12,6 @@ use Illuminate\Support\Collection;
 
 class ApiResponse
 {
-    /**
-     * Success response (200 OK).
-     */
     public static function success(
         mixed $data = null,
         string $message = 'Success',
@@ -32,25 +29,16 @@ class ApiResponse
         return response()->json($payload, $status);
     }
 
-    /**
-     * Created response (201).
-     */
     public static function created(mixed $data = null, string $message = 'Created'): JsonResponse
     {
         return self::success($data, $message, 201);
     }
 
-    /**
-     * No content (204).
-     */
     public static function noContent(): JsonResponse
     {
         return response()->json(null, 204);
     }
 
-    /**
-     * Error response (4xx/5xx).
-     */
     public static function error(
         string $message = 'An error occurred',
         int $status = 400,
@@ -68,41 +56,26 @@ class ApiResponse
         return response()->json($payload, $status);
     }
 
-    /**
-     * Validation error (422).
-     */
     public static function validationError(array $errors, string $message = 'Validation failed'): JsonResponse
     {
         return self::error($message, 422, $errors);
     }
 
-    /**
-     * Unauthorized (401).
-     */
     public static function unauthorized(string $message = 'Unauthenticated'): JsonResponse
     {
         return self::error($message, 401);
     }
 
-    /**
-     * Forbidden (403).
-     */
     public static function forbidden(string $message = 'Forbidden'): JsonResponse
     {
         return self::error($message, 403);
     }
 
-    /**
-     * Not found (404).
-     */
     public static function notFound(string $message = 'Resource not found'): JsonResponse
     {
         return self::error($message, 404);
     }
 
-    /**
-     * Normalize data for consistent JSON (paginator, resource, etc.).
-     */
     protected static function normalizeData(mixed $data): mixed
     {
         if ($data instanceof ResourceCollection) {

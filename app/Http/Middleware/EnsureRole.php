@@ -10,9 +10,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureRole
 {
-    /**
-     * @param  array<int, string>  $roles  e.g. ['admin', 'organizer']
-     */
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         if (! $request->user()) {

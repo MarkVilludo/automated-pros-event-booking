@@ -15,20 +15,28 @@ class EventService
 {
     use InvalidatesCache;
 
-    private const CACHE_TTL_SECONDS = 300; // 5 minutes
+    private const CACHE_TTL_SECONDS = 300;
     private const CACHE_PREFIX = 'events';
     private const LIST_VERSION_KEY = 'events_list_version';
 
-    public function list(int $userId, UserRole $role, int $perPage = 15): LengthAwarePaginator
+    public function list(int $userId, UserRole $role, int $perPage = 15, array $filters = []): LengthAwarePaginator
     {
         $version = Cache::get(self::LIST_VERSION_KEY, 0);
         $page = request()->get('page', 1);
-        $cacheKey = self::CACHE_PREFIX . ".list.v{$version}.{$role->value}.{$userId}.{$perPage}.{$page}";
+        $cacheKey = self::CACHE_PREFIX . '.list.v' . $version . '.' . $role->value . '.' . $userId . '.' . $perPage . '.' . $page . '.' . md5(json_encode($filters));
 
-        return Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($userId, $role, $perPage) {
-            $query = Event::with('creator:id,name,email', 'tickets');
+        return Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($userId, $role, $perPage, $filters) {
+            $query = Event::query()->with('creator:id,name,email', 'tickets');
             if ($role === UserRole::Organizer) {
                 $query->where('created_by', $userId);
+            }
+            $query->searchByTitle($filters['search'] ?? null);
+            $query->filterByDate([
+                'from' => $filters['date_from'] ?? null,
+                'to' => $filters['date_to'] ?? null,
+            ]);
+            if (! empty($filters['location'])) {
+                $query->where('location', 'like', '%' . $filters['location'] . '%');
             }
             return $query->latest()->paginate($perPage);
         });

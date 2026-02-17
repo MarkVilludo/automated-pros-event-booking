@@ -8,9 +8,6 @@ use Illuminate\Validation\ValidationException;
 
 class AuthService
 {
-    /**
-     * @return array{user: User, token: string, token_type: string}
-     */
     public function register(array $validated): array
     {
         $user = User::create($validated);
@@ -22,11 +19,6 @@ class AuthService
         ];
     }
 
-    /**
-     * @return array{user: User, token: string, token_type: string}
-     *
-     * @throws ValidationException
-     */
     public function login(string $email, string $password): array
     {
         if (! Auth::attempt(compact('email', 'password'))) {

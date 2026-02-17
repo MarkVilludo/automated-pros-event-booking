@@ -5,7 +5,7 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "base_url", "value": "http://127.0.0.1:8000/api/v1" },
+    { "key": "base_url", "value": "http://127.0.0.1:8000/api" },
     { "key": "token", "value": "" }
   ],
   "auth": {
@@ -76,12 +76,12 @@
           }
         },
         {
-          "name": "Get current user",
+          "name": "Get current user (GET /me)",
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/user",
-            "description": "Get authenticated user. Requires auth."
+            "url": "{{base_url}}/me",
+            "description": "GET /api/me - Authenticated user."
           }
         }
       ]
@@ -94,8 +94,8 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/events?per_page=15",
-            "description": "Admin: all. Organizer: own. Customer: all."
+            "url": "{{base_url}}/events?per_page=15&search=&date_from=&date_to=&location=",
+            "description": "GET /api/events - Pagination, search, filter by date_from, date_to, location."
           }
         },
         {
@@ -145,25 +145,11 @@
             "method": "DELETE",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/events/1",
-            "description": "Admin or event owner. Replace 1 with event id."
-          }
-        }
-      ]
-    },
-    {
-      "name": "Tickets",
-      "item": [
-        {
-          "name": "List tickets",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/tickets?per_page=15",
-            "description": "Admin: all. Organizer: own events. Customer: all."
+            "description": "Organizer only. Replace 1 with event id."
           }
         },
         {
-          "name": "Create ticket",
+          "name": "POST event tickets",
           "request": {
             "method": "POST",
             "header": [
@@ -172,21 +158,17 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"event_id\": 1,\n  \"type\": \"VIP\",\n  \"price\": 199.99,\n  \"quantity\": 100\n}"
+              "raw": "{\n  \"type\": \"VIP\",\n  \"price\": 199.99,\n  \"quantity\": 100\n}"
             },
-            "url": "{{base_url}}/tickets",
-            "description": "Admin or Organizer (for their event). Set event_id to existing event."
+            "url": "{{base_url}}/events/1/tickets",
+            "description": "POST /api/events/{event_id}/tickets - Organizer only. Replace 1 with event id."
           }
-        },
-        {
-          "name": "Show ticket",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/tickets/1",
-            "description": "Replace 1 with ticket id."
-          }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Tickets",
+      "item": [
         {
           "name": "Update ticket",
           "request": {
@@ -209,25 +191,11 @@
             "method": "DELETE",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/tickets/1",
-            "description": "Replace 1 with ticket id."
-          }
-        }
-      ]
-    },
-    {
-      "name": "Bookings",
-      "item": [
-        {
-          "name": "List bookings",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/bookings?per_page=15",
-            "description": "Admin: all. Organizer: their events. Customer: own only."
+            "description": "PUT/DELETE tickets - Organizer only. Replace 1 with ticket id."
           }
         },
         {
-          "name": "Create booking",
+          "name": "POST ticket bookings",
           "request": {
             "method": "POST",
             "header": [
@@ -236,44 +204,63 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"ticket_id\": 1,\n  \"quantity\": 2\n}"
+              "raw": "{\n  \"quantity\": 2\n}"
             },
-            "url": "{{base_url}}/bookings",
-            "description": "Book tickets. Set ticket_id to existing ticket. quantity must not exceed ticket quantity."
+            "url": "{{base_url}}/tickets/1/bookings",
+            "description": "POST /api/tickets/{id}/bookings - Customer. Prevent double booking. Replace 1 with ticket id."
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
         {
-          "name": "Show booking",
+          "name": "GET bookings (customer's bookings)",
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/bookings/1",
-            "description": "Replace 1 with booking id."
+            "url": "{{base_url}}/bookings?per_page=15",
+            "description": "GET /api/bookings - Customer's bookings."
           }
         },
         {
-          "name": "Update booking (e.g. cancel)",
+          "name": "PUT cancel booking",
           "request": {
             "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/bookings/1/cancel",
+            "description": "PUT /api/bookings/{id}/cancel - Customer. Replace 1 with booking id."
+          }
+        },
+        {
+          "name": "POST mock payment",
+          "request": {
+            "method": "POST",
             "header": [
               { "key": "Accept", "value": "application/json" },
               { "key": "Content-Type", "value": "application/json" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"cancelled\"\n}"
+              "raw": "{\n  \"simulate_success\": true\n}"
             },
-            "url": "{{base_url}}/bookings/1",
-            "description": "Update quantity or status (pending, confirmed, cancelled). Replace 1 with booking id."
+            "url": "{{base_url}}/bookings/1/payment",
+            "description": "POST /api/bookings/{id}/payment - Mock payment. simulate_success: true/false. Replace 1 with booking id."
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
         {
-          "name": "Delete booking",
+          "name": "GET payment",
           "request": {
-            "method": "DELETE",
+            "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/bookings/1",
-            "description": "Delete/cancel booking. Replace 1 with booking id."
+            "url": "{{base_url}}/payments/1",
+            "description": "GET /api/payments/{id}. Replace 1 with payment id."
           }
         }
       ]

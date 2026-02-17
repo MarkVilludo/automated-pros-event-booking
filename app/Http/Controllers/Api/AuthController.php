@@ -16,18 +16,12 @@ class AuthController extends Controller
         private AuthService $authService
     ) {}
 
-    /**
-     * Register a new user.
-     */
     public function register(RegisterRequest $request): JsonResponse
     {
         $result = $this->authService->register($request->validated());
         return ApiResponse::created($result, 'Registration successful');
     }
 
-    /**
-     * Login user and issue token.
-     */
     public function login(LoginRequest $request): JsonResponse
     {
         $result = $this->authService->login(
@@ -37,18 +31,12 @@ class AuthController extends Controller
         return ApiResponse::success($result, 'Login successful');
     }
 
-    /**
-     * Logout (revoke current token).
-     */
     public function logout(Request $request): JsonResponse
     {
         $this->authService->logout($request->user());
         return ApiResponse::success(null, 'Logged out successfully');
     }
 
-    /**
-     * Get authenticated user.
-     */
     public function me(Request $request): JsonResponse
     {
         return ApiResponse::success($request->user(), 'User retrieved');

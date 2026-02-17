@@ -24,7 +24,6 @@ class BookingService
         return Cache::remember($cacheKey, self::CACHE_TTL_SECONDS, function () use ($userId, $role, $perPage) {
             $query = Booking::with('user:id,name,email', 'ticket.event:id,title,date', 'payment');
             if ($role === UserRole::Admin) {
-                // all
             } elseif ($role === UserRole::Organizer) {
                 $query->whereHas('ticket.event', fn ($q) => $q->where('created_by', $userId));
             } else {
