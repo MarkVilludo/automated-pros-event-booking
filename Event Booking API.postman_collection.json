@@ -79,7 +79,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n//   \"email\": \"admin@example.com\", //Admin\n  \"email\": \"villudo.joyce+101@gmail.com\", //Customer\n//   \"email\": \"villudo.joyce@gmail.com\", //Organizer\n  \"password\": \"password\"\n}"
+              "raw": "{\n//   \"email\": \"admin1@example.com\", //Admin\n  \"email\": \"customer1@example.com\", //Customer\n//   \"email\": \"organizer1@example.com\", //Organizer\n  \"password\": \"password\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/login",
